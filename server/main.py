@@ -8,8 +8,7 @@ load_dotenv()
 
 app = FastAPI()
 
-r_api = os.getenv("RESEND_API_KEY")
-resend.apikey = r_api
+resend.api_key = os.getenv("RESEND_API_KEY")
 
 from_email = os.getenv("FROM_EMAIL")
 to_email = os.getenv("TO_EMAIL")
@@ -25,16 +24,17 @@ def trigger_email():
         def get_daily_insight():
             interaction = client.interactions.create(
                 model='gemini-2.5-flash',
-                input='Give an inspiring short text about success and faith in life and make it sound like you said it as a quote for developers like me. In a raw html format, make it a short paragraph with a title and a subtitle. The title should be in h1 tag, the subtitle in h2 tag, and the paragraph in p tag. The text should be no more than 100 words.'
+                input='Give an inspiring short text about success and faith in life and make it sound like you said it as a quote for developers like me. In a raw html format, make it a short paragraph with a title and a subtitle. The title should be in h1 tag, the subtitle in h2 tag, and the paragraph in p tag. The text should be no more than 100 words. Also, increase the vibrancy of of the overall result, the text by using a few emojis in the title and subtitle. The text should be in a motivational tone and should be suitable for developers, add some html tags that make it visually appealing. make the text bigger'
             )
             return interaction.output_text
     
         daily_insight = get_daily_insight()
+
         result = resend.Emails.send({
-            'from_email': from_email,
-            'to_email': [to_email],
+            'from': from_email,
+            'to': to_email,
             'subject': subject,
-            'html': daily_insight
+            'html': daily_insight.strip().removeprefix("```html").removesuffix("```").strip(),
         })
 
         return {
